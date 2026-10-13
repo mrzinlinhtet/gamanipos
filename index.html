@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="my">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>gamaniPOS — Myanmar POS</title>
+  <meta name="description" content="Free POS for online sellers, home shops, retail stores, market stalls and wholesalers in Myanmar. Works without internet, syncs devices when online, prints Myanmar receipts, tracks stock, customer credit and profit.">
+  <meta property="og:title" content="gamaniPOS — Myanmar POS">
+  <meta property="og:description" content="Sell faster. Know your profit. Works offline, syncs when online.">
+  <meta property="og:image" content="assets/pos.png">
+  <meta name="theme-color" content="#0D6B5E">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <meta name="theme-color" content="#0D6B5E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;600;700&family=Noto+Sans+JP:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --jade: #0D7A6B; --jade-deep: #07473F; --jade-soft: #E8F4F1;
+      --gold: #D99A2B; --gold-soft: #FBF1DC;
+      --paper: #FAFAFA; --card: #FFFFFF; --ink: #18181B; --muted: #71717A; --line: #E4E4E7;
+      --chip: #F4F4F5;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #09090B; --card: #111113; --ink: #FAFAFA; --muted: #A1A1AA; --line: #27272A;
+        --jade: #5EC4B0; --jade-soft: #0E2B26; --gold-soft: #2E2208; --chip: #18181B;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; background: var(--paper); color: var(--ink);
+      font-family: "Plus Jakarta Sans", "Noto Sans Myanmar", "Noto Sans JP", system-ui, sans-serif;
+      line-height: 1.6;
+    }
+    a { color: inherit; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+
+    /* Language: show only the active one */
+    html:not([lang="my"]) [data-l="my"], html:not([lang="en"]) [data-l="en"],
+    html:not([lang="ja"]) [data-l="ja"] { display: none !important; }
+
+    header {
+      position: sticky; top: 0; z-index: 10;
+      background: color-mix(in srgb, var(--paper) 88%, transparent);
+      backdrop-filter: blur(10px); border-bottom: 1px solid var(--line);
+    }
+    .nav { display: flex; align-items: center; gap: 16px; height: 64px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; text-decoration: none; }
+    .brand img { width: 34px; height: 34px; }
+    .nav .spacer { flex: 1; }
+    .nav a.link { text-decoration: none; color: var(--muted); font-weight: 600; font-size: 15px; }
+    .lang { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--card); }
+    .lang button {
+      border: 0; background: transparent; color: var(--ink); padding: 6px 12px; cursor: pointer;
+      font: inherit; font-size: 14px;
+    }
+    .lang button[aria-pressed="true"] { background: var(--chip); font-weight: 600; }
+
+    /* The hero fills exactly the first screen below the 65px sticky header. */
+    .hero {
+      min-height: calc(100vh - 65px); min-height: calc(100svh - 65px);
+      display: flex; flex-direction: column; justify-content: center;
+      position: relative; overflow: hidden; border-bottom: 1px solid var(--line);
+      background: radial-gradient(1200px 500px at 85% -10%, var(--jade-soft), transparent 60%), var(--paper);
+    }
+    .hero .wrap { width: 100%; display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; padding-top: 40px; padding-bottom: 56px; position: relative; z-index: 1; }
+    .scroll-hint {
+      position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 1;
+      width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+      color: var(--muted); border: 1px solid var(--line); background: var(--card);
+      animation: nudge 2.4s ease-in-out infinite;
+    }
+    .scroll-hint svg { width: 18px; height: 18px; }
+    @keyframes nudge { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 5px); } }
+    @media (prefers-reduced-motion: reduce) { .scroll-hint { animation: none; } }
+    @media (max-height: 560px) { .scroll-hint { display: none; } }
+    .badge {
+      display: inline-flex; gap: 8px; align-items: center; background: var(--card);
+      border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 13px;
+      font-weight: 500; color: var(--muted);
+    }
+    .badge b { color: var(--jade); }
+    h1 { font-size: clamp(34px, 5vw, 52px); line-height: 1.1; margin: 18px 0 16px; letter-spacing: -1.5px; font-weight: 700; }
+    h1 .gold { color: var(--jade); }
+    .lead { font-size: 17px; color: var(--muted); max-width: 520px; }
+    .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 600;
+      border-radius: 8px; padding: 11px 18px; font-size: 15px;
+    }
+    .btn.gold { background: var(--jade); color: #fff; }
+    @media (prefers-color-scheme: dark) { .btn.gold { color: #00241E; } }
+    .btn.ghost { border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+    .btn svg { width: 20px; height: 20px; }
+    .shot {
+      border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 24px 60px rgba(0,0,0,.10); width: 100%;
+      border: 1px solid var(--line);
+    }
+    .hero .phone {
+      position: absolute; width: 30%; right: -4%; bottom: -12%; border-radius: 22px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.18); border: 6px solid #18181B;
+    }
+    .hero-visual { position: relative; }
+    img { max-width: 100%; height: auto; }
+
+    section { padding: 72px 0; }
+    /* Nav links jump to the section headings; stop 24px below the sticky header. */
+    h2[id] { scroll-margin-top: 88px; }
+    /* The last section is tall enough that "FAQ" can also scroll up to that spot. */
+    .last-section { min-height: calc(100vh - 88px - var(--footer-h, 80px)); min-height: calc(100svh - 88px - var(--footer-h, 80px)); }
+    h2 { font-size: clamp(24px, 3.2vw, 32px); margin: 0 0 8px; letter-spacing: -.8px; font-weight: 700; }
+    .sub { color: var(--muted); margin: 0 0 32px; max-width: 640px; }
+
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px;
+    }
+    .card .ic {
+      width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center;
+      background: var(--chip); color: var(--ink); border: 1px solid var(--line); margin-bottom: 14px;
+    }
+    .card h3 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+    .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .gallery figure { margin: 0; }
+    .gallery img { width: 100%; border-radius: 10px; border: 1px solid var(--line); display: block; box-shadow: 0 12px 32px rgba(0,0,0,.06); }
+    .gallery figcaption { color: var(--muted); font-size: 14px; margin-top: 8px; }
+
+    .downloads { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .dl {
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px;
+      display: flex; flex-direction: column; gap: 8px; text-decoration: none;
+      transition: transform .15s, border-color .15s;
+    }
+    .dl:hover { transform: translateY(-2px); border-color: var(--ink); }
+    .dl .t { font-weight: 600; font-size: 16px; }
+    .dl .d { color: var(--muted); font-size: 14px; flex: 1; }
+    .dl .go { color: var(--jade); font-weight: 600; font-size: 14px; }
+    
+    .note { color: var(--muted); font-size: 14px; margin-top: 16px; }
+
+    .free {
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 32px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center;
+    }
+    .free ul { margin: 0; padding-left: 20px; }
+    .free li { margin: 6px 0; }
+
+    details {
+      background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+      padding: 14px 18px; margin-bottom: 8px;
+    }
+    summary { font-weight: 600; cursor: pointer; }
+    details p { color: var(--muted); margin: 10px 0 0; }
+
+    footer { border-top: 1px solid var(--line); padding: 28px 0; color: var(--muted); font-size: 14px; }
+    footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; }
+
+    @media (max-width: 900px) {
+      .hero .wrap, .free { grid-template-columns: 1fr; }
+      .hero .wrap { gap: 24px; padding-top: 24px; padding-bottom: 60px; }
+      /* Keep text, buttons and screenshot within one phone screen. */
+      .hero .shot { max-height: 30svh; object-fit: cover; object-position: left top; }
+      h1 { margin: 12px 0 10px; }
+      .lead { font-size: 16px; }
+      .cta { margin-top: 20px; }
+      .grid { grid-template-columns: 1fr 1fr; }
+      .downloads { grid-template-columns: 1fr 1fr; }
+      .hero .phone { display: none; }
+      .nav a.link { display: none; }
+    }
+    /* Short phones: the first screen is just the message and buttons. */
+    @media (max-width: 900px) and (max-height: 800px) {
+      .hero-visual { display: none; }
+    }
+    @media (max-width: 560px) {
+      .grid, .downloads, .gallery { grid-template-columns: 1fr; }
+      section { padding: 52px 0; }
+      .free { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#"><img src="assets/icon.svg" alt="">gamaniPOS</a>
+    <span class="spacer"></span>
+    <a class="link" href="#features"><span data-l="my">လုပ်ဆောင်ချက်များ</span><span data-l="en">Features</span><span data-l="ja">機能</span></a>
+    <a class="link" href="#download"><span data-l="my">ဒေါင်းလုဒ်</span><span data-l="en">Download</span><span data-l="ja">ダウンロード</span></a>
+    <a class="link" href="#faq">FAQ</a>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-set="my">မြန်မာ</button>
+      <button type="button" data-set="en">EN</button>
+      <button type="button" data-set="ja">日本語</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <span class="badge"><b>●</b>
+          <span data-l="my">အခမဲ့ · အင်တာနက်မရှိလည်း ရောင်းနိုင် · အွန်လိုင်းတွင် ချိတ်ဆက်</span><span data-l="en">Free · Works offline · Syncs online</span><span data-l="ja">無料 · オフラインで動作 · オンラインで同期</span>
+        </span>
+        <h1>
+          <span data-l="my">မြန်မြန်ရောင်း။<br><span class="gold">အမြတ်ကို သိပါ။</span></span>
+          <span data-l="en">Sell faster.<br><span class="gold">Know your profit.</span></span><span data-l="ja">すばやく販売。<br><span class="gold">利益をしっかり把握。</span></span>
+        </h1>
+        <p class="lead">
+          <span data-l="my">အွန်လိုင်းရောင်းသူများ (Facebook / Viber / TikTok)၊ အိမ်ဆိုင်၊ လက်လီဆိုင်၊ ဈေးဆိုင်နှင့် လက်ကားဆိုင်များအတွက် အရောင်းစနစ်။ မြန်မာစာ ပြေစာ၊ ကုန်လက်ကျန်၊ အကြွေး၊ ပို့ဆောင်မှုနှင့် နေ့ချုပ်၊ လချုပ်၊ နှစ်ချုပ် အမြတ်ကို တစ်နေရာတည်းတွင်။</span>
+          <span data-l="en">Point of sale for online sellers (Facebook / Viber / TikTok shops), home shops, retail stores, market stalls and wholesalers. Myanmar receipts, stock, customer credit, deliveries and daily, monthly and yearly profit in one place.</span><span data-l="ja">オンライン販売（Facebook / Viber / TikTokショップ）、自宅のお店、小売店、市場の露店、卸売業者のためのPOS。ミャンマー語のレシート、在庫、顧客の掛け売り、配送、日次・月次・年次の利益をひとつにまとめます。</span>
+        </p>
+        <div class="cta">
+          <a class="btn gold" href="#download">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/></svg>
+            <span data-l="my">အခမဲ့ ဒေါင်းလုဒ်</span><span data-l="en">Download free</span><span data-l="ja">無料ダウンロード</span>
+          </a>
+          <a class="btn ghost" href="app/">
+            <span data-l="my">Browser တွင် စမ်းသုံးရန်</span><span data-l="en">Try in your browser</span><span data-l="ja">ブラウザで試す</span>
+          </a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <img class="shot" src="assets/pos.png" alt="gamaniPOS sales screen" width="1366" height="860">
+        <img class="phone" src="assets/phone.png" alt="gamaniPOS on a phone" width="400" height="860">
+      </div>
+    </div>
+    <a class="scroll-hint" href="#features" aria-label="More">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </a>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <h2 id="features"><span data-l="my">ဆိုင်တစ်ဆိုင်လုံးအတွက် လိုသမျှ</span><span data-l="en">Everything a shop needs</span><span data-l="ja">お店に必要なすべて</span></h2>
+      <p class="sub"><span data-l="my">Android၊ Huawei ဖုန်း/တက်ဘလက်နှင့် Windows ကွန်ပျူတာတွင် app ဖြင့်၊ iPhone၊ Mac နှင့် အခြားစက်များတွင် browser ဖြင့် အသုံးပြုနိုင်သည်။</span><span data-l="en">Apps for Android, Huawei and Windows, plus a web version for iPhone, Mac and any browser.</span><span data-l="ja">Android・Huawei・Windows用アプリに加え、iPhone・Mac・各種ブラウザで使えるWeb版もあります。</span></p>
+      <div class="grid">
+        <div class="card"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M11 8v8M15 8v8M18 8v8"/></svg></div>
+          <h3><span data-l="my">မြန်ဆန်သော အရောင်း</span><span data-l="en">Fast checkout</span><span data-l="ja">すばやい会計</span></h3>
+          <p><span data-l="my">Barcode ဖတ်ခြင်း၊ လက်လီ/လက်ကား ဈေး၊ ခု/ဘူး/ထုပ် ယူနစ်။ ငွေသား၊ KBZPay၊ WavePay၊ AYA Pay၊ CB Pay၊ ဘဏ်လွှဲ သို့မဟုတ် ပေါင်းစပ်ပေးချေနိုင်သည်။</span><span data-l="en">Barcode scanning, retail and wholesale prices, pieces, boxes and packs. Take cash, KBZPay, WavePay, AYA Pay, CB Pay or bank transfer — or split one bill between them.</span><span data-l="ja">バーコード読み取り、小売・卸売価格、個・箱・パック単位に対応。現金、KBZPay、WavePay、AYA Pay、CB Pay、銀行振込、または1回の会計を分割して支払えます。</span></p></div>
+        <div class="card"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></div>
+          <h3><span data-l="my">မြန်မာစာ ပြေစာ</span><span data-l="en">Myanmar receipts</span><span data-l="ja">ミャンマー語レシート</span></h3>
+          <p><span data-l="my">Bluetooth၊ Wi-Fi ပရင်တာ သို့မဟုတ် PDF ဖြင့် မြန်မာစာ မှန်ကန်စွာ ထုတ်နိုင်သည်။</span><span data-l="en">Myanmar text prints correctly on Bluetooth and Wi-Fi printers, or as PDF to share on Viber.</span><span data-l="ja">BluetoothやWi-Fiプリンターでミャンマー語を正しく印刷。PDFにしてViberで送ることもできます。</span></p></div>
+        <div class="card"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg></div>
+          <h3><span data-l="my">ကုန်လက်ကျန်</span><span data-l="en">Stock control</span><span data-l="ja">在庫管理</span></h3>
+          <p><span data-l="my">ဆိုင်ခွဲနှင့် ဂိုဒေါင်၊ ကုန်လွှဲ၊ အရွယ်/အရောင် အမျိုးအစား၊ လက်ကျန်စစ်၊ သက်တမ်းကုန်ရက်၊ လက်ကျန်နည်း သတိပေးချက်။</span><span data-l="en">Branches and warehouses, transfers, sizes and colours, stock counts, expiry dates and low-stock alerts.</span><span data-l="ja">支店と倉庫、在庫移動、サイズ・カラー、棚卸し、賞味期限、在庫少アラート。</span></p></div>
+        <div class="card"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg></div>
+          <h3><span data-l="my">အကြွေးစာရင်း</span><span data-l="en">Credit & payables</span><span data-l="ja">掛け売り・買掛金</span></h3>
+          <p><span data-l="my">ဖောက်သည်အကြွေး၊ ရက်အလိုက်ခွဲခြမ်း၊ ကုန်သည်ပေးရန်၊ အသုံးစရိတ်နှင့် ငွေအံဆွဲ။</span><span data-l="en">Customer credit with aging, supplier payables, expenses and cash drawer shifts.</span><span data-l="ja">経過日数つきの顧客の掛け売り、仕入先への買掛金、経費、レジのシフト管理。</span></p></div>
+        <div class="card"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg></div>
+          <h3><span data-l="my">အွန်လိုင်း အော်ဒါ</span><span data-l="en">Online orders</span><span data-l="ja">オンライン注文</span></h3>
+          <p><span data-l="my">Facebook၊ TikTok၊ Viber၊ Telegram အော်ဒါများ — ဖုန်းနံပါတ်ဖြင့် ဖောက်သည်ရှာခြင်း၊ ဇုန်အလိုက် ပို့ခ၊ အတည်ပြု → ထုပ်ပိုး → ပို့ → ရောက်ပြီ၊ ပို့ဆောင်သူနှင့် ငွေစာရင်းရှင်းခြင်း။</span><span data-l="en">Orders from Facebook, TikTok, Viber and Telegram: find customers by phone, delivery fees by zone, confirm → pack → send out → delivered, and settle cash with each courier.</span><span data-l="ja">Facebook・TikTok・Viber・Telegramの注文：電話番号で顧客を検索、エリア別の配送料、確認 → 梱包 → 発送 → 配達済み、配送業者ごとの現金精算。</span></p></div>
+        <div class="card"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/><path d="M16 8h4v4"/></svg></div>
+          <h3><span data-l="my">အမြတ် အစီရင်ခံစာ</span><span data-l="en">Profit reports</span><span data-l="ja">利益レポート</span></h3>
+          <p><span data-l="my">နေ့ချုပ်၊ လချုပ်၊ နှစ်ချုပ်၊ အရောင်းရဆုံးပစ္စည်းများ၊ Excel သို့ ထုတ်ယူခြင်း။</span><span data-l="en">Daily, monthly and yearly P&amp;L, best sellers, and Excel export.</span><span data-l="ja">日次・月次・年次の損益、売れ筋商品、Excelへの出力。</span></p></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="gallery">
+        <figure><img src="assets/checkout.png" alt="" loading="lazy" width="1366" height="860">
+          <figcaption><span data-l="my">ငွေပေးချေမှု - ငွေသား၊ KBZPay၊ အကြွေး သို့မဟုတ် ပစ္စည်းရောက်မှ ငွေချေ</span><span data-l="en">Checkout: cash, KBZPay, credit or pay on delivery</span><span data-l="ja">会計：現金、KBZPay、掛け売り、または代金引換</span></figcaption></figure>
+        <figure><img src="assets/receipt.png" alt="" loading="lazy" width="1366" height="860">
+          <figcaption><span data-l="my">မြန်မာစာ ပြေစာ</span><span data-l="en">Myanmar receipt</span><span data-l="ja">ミャンマー語レシート</span></figcaption></figure>
+        <figure><img src="assets/reports.png" alt="" loading="lazy" width="1366" height="860">
+          <figcaption><span data-l="my">အရှုံးအမြတ် အစီရင်ခံစာ</span><span data-l="en">Profit and loss</span><span data-l="ja">損益</span></figcaption></figure>
+        <figure><img src="assets/inventory.png" alt="" loading="lazy" width="1366" height="860">
+          <figcaption><span data-l="my">ကုန်လက်ကျန် တန်ဖိုး</span><span data-l="en">Stock value</span><span data-l="ja">在庫評価額</span></figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <h2 id="download"><span data-l="my">ဒေါင်းလုဒ်</span><span data-l="en">Download</span><span data-l="ja">ダウンロード</span></h2>
+      <p class="sub"><span data-l="my">အခမဲ့ဖြစ်ပြီး အကောင့်ဖွင့်ရန် မလိုပါ။ စက်များစွာ ချိတ်ဆက်လိုမှသာ အခမဲ့အကောင့် ဖွင့်ပါ။</span><span data-l="en">Free, no account needed. Create a free account only if you want to sync several devices.</span><span data-l="ja">無料、アカウント不要。複数の端末を同期したい場合のみ、無料アカウントを作成します。</span></p>
+      <div class="downloads">
+        <a class="dl" data-file="gamaniPOS-android.apk" href="#">
+          <span class="t">Android</span>
+          <span class="d"><span data-l="my">Android ဖုန်းအများစုအတွက်</span><span data-l="en">For most Android phones</span><span data-l="ja">ほとんどのAndroidスマホ向け</span></span>
+          <span class="go">APK ↓</span></a>
+        <a class="dl" data-file="gamaniPOS-huawei.apk" href="#">
+          <span class="t">Huawei</span>
+          <span class="d"><span data-l="my">Google မပါသော Huawei ဖုန်းများအတွက်</span><span data-l="en">For Huawei phones without Google</span><span data-l="ja">Googleのない Huaweiスマホ向け</span></span>
+          <span class="go">APK ↓</span></a>
+        <a class="dl" data-file="gamaniPOS-Setup.exe" href="#">
+          <span class="t">Windows</span>
+          <span class="d"><span data-l="my">ကွန်ပျူတာ / Laptop</span><span data-l="en">PC and laptop</span><span data-l="ja">パソコン・ノートパソコン</span></span>
+          <span class="go">Setup.exe ↓</span></a>
+        <a class="dl" href="app/">
+          <span class="t">Web</span>
+          <span class="d"><span data-l="my">iPhone၊ Mac နှင့် မည်သည့် browser တွင်မဆို</span><span data-l="en">iPhone, Mac and any browser</span><span data-l="ja">iPhone・Mac・各種ブラウザ</span></span>
+          <span class="go"><span data-l="my">ဖွင့်မည် →</span><span data-l="en">Open →</span><span data-l="ja">開く →</span></span></a>
+      </div>
+      <p class="note">
+        <span data-l="my">ဖုန်းအဟောင်း (32-bit) အတွက် <a data-file="gamaniPOS-android-arm32.apk" href="#">ဤနေရာ</a>။ APK ထည့်သွင်းရာတွင် “Unknown sources” ကို ခွင့်ပြုရန် လိုနိုင်ပါသည်။ ဗားရှင်းအားလုံးကို <a data-releases href="#">GitHub Releases</a> တွင် ကြည့်ပါ။</span>
+        <span data-l="en">Older 32-bit phones: <a data-file="gamaniPOS-android-arm32.apk" href="#">download here</a>. Android may ask you to allow installs from this source. All versions are on <a data-releases href="#">GitHub Releases</a>.</span><span data-l="ja">古い32ビットのスマホは<a data-file="gamaniPOS-android-arm32.apk" href="#">こちらからダウンロード</a>。Androidで、この提供元からのインストールの許可を求められることがあります。すべてのバージョンは<a data-releases href="#">GitHub Releases</a>にあります。</span>
+      </p>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="free">
+        <div>
+          <h2><span data-l="my">သင့်ဒေတာ သင့်ပိုင်</span><span data-l="en">Your data stays yours</span><span data-l="ja">データはあなたのもの</span></h2>
+          <p class="sub" style="margin:0"><span data-l="my">ဒေတာများကို သင့်စက်ထဲတွင် သိမ်းသည်။ Cloud ချိတ်ဆက်မှုကို ကိုယ်တိုင်ဖွင့်မှသာ သင့်အကောင့်သို့ ပို့ပြီး သင့်ဝန်ထမ်းများသာ မြင်ရသည်။ မည်သည့်အချိန်မဆို Excel သို့ ထုတ်ယူနိုင်သည်။</span><span data-l="en">Data is stored on your own device. It goes to the cloud only if you turn on sync, and only your staff can see it. Export everything to Excel at any time.</span><span data-l="ja">データはあなたの端末に保存されます。同期をオンにした場合のみクラウドに送られ、見られるのはあなたのスタッフだけです。いつでもすべてをExcelに出力できます。</span></p>
+        </div>
+        <ul>
+          <li><span data-l="my">အင်တာနက် မလိုဘဲ ရောင်းနိုင်သည်</span><span data-l="en">Sell with no internet</span><span data-l="ja">インターネットなしで販売</span></li>
+          <li><span data-l="my">Backup ဖိုင်ကို Drive / Viber တွင် သိမ်းနိုင်သည်</span><span data-l="en">Back up to a file on Drive or Viber</span><span data-l="ja">DriveやViberにファイルでバックアップ</span></li>
+          <li><span data-l="my">ယခင်စနစ်မှ ပစ္စည်းစာရင်းကို Excel ဖြင့် တစ်ခါတည်း ထည့်နိုင်သည်</span><span data-l="en">Bring your product list from Excel in one go</span><span data-l="ja">Excelの商品リストを一括で取り込み</span></li>
+          <li><span data-l="my">ဝန်ထမ်း PIN နှင့် ရာထူးအလိုက် ခွင့်ပြုချက်</span><span data-l="en">Staff PINs and role permissions</span><span data-l="ja">スタッフのPINと役割ごとの権限</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="last-section" style="padding-top:0">
+    <div class="wrap">
+      <h2 id="faq">FAQ</h2>
+      <details><summary><span data-l="my">ဘယ်ပရင်တာ သုံးရမလဲ?</span><span data-l="en">Which printer should I buy?</span><span data-l="ja">どのプリンターを買えばいい？</span></summary>
+        <p><span data-l="my">58mm သို့မဟုတ် 80mm thermal ပရင်တာ (ESC/POS) မည်သည့်အမျိုးအစားမဆို ရသည်။ iPhone သုံးလျှင် Bluetooth LE သို့မဟုတ် Wi-Fi ပရင်တာကို ရွေးပါ။ A4 ပရင်တာဖြင့်လည်း ထုတ်နိုင်သည်။</span><span data-l="en">Any 58 mm or 80 mm ESC/POS thermal printer. For iPhones choose a Bluetooth LE or Wi-Fi model. Normal A4 printers also work.</span><span data-l="ja">58mmまたは80mmのESC/POS感熱プリンターなら使えます。iPhoneにはBluetooth LEまたはWi-Fiモデルを選んでください。通常のA4プリンターも使えます。</span></p></details>
+      <details><summary><span data-l="my">အင်တာနက် မရှိလည်း ရလား?</span><span data-l="en">Does it work without internet?</span><span data-l="ja">インターネットがなくても使えますか？</span></summary>
+        <p><span data-l="my">ရပါသည်။ အရောင်း၊ ပြေစာ၊ အစီရင်ခံစာ အားလုံး အင်တာနက်မလိုပါ။</span><span data-l="en">Yes. Selling, receipts and reports all work offline.</span><span data-l="ja">はい。販売、レシート、レポートはすべてオフラインで使えます。</span></p></details>
+      <details><summary><span data-l="my">စက်များစွာဖြင့် သုံးလို့ရလား?</span><span data-l="en">Can I use several devices?</span><span data-l="ja">複数の端末で使えますか？</span></summary>
+        <p><span data-l="my">ရပါသည်။ ဆက်တင် → Cloud ချိတ်ဆက်မှု တွင် အခမဲ့အကောင့်ဖွင့်ပါ။ ဖုန်း၊ ကွန်ပျူတာနှင့် ဆိုင်ခွဲများ ဒေတာတစ်ခုတည်းကို မျှသုံးပြီး ဝန်ထမ်းတစ်ဦးချင်းစီကို ရာထူးအလိုက် ခွင့်ပြုချက်ပေးနိုင်သည်။ အင်တာနက်ပြတ်နေလည်း ဆက်ရောင်းနိုင်ပြီး ပြန်ချိတ်မိမှ အလိုအလျောက် ပေါင်းပေးသည်။</span><span data-l="en">Yes. Create a free account in Settings → Cloud sync. Phones, computers and branches then share the same data, and each staff member gets their own role. If the internet drops you keep selling; changes merge automatically when you are back online.</span><span data-l="ja">はい。設定 → クラウド同期で無料アカウントを作成すると、スマホ・パソコン・支店で同じデータを共有でき、スタッフごとに役割を設定できます。インターネットが切れても販売を続けられ、オンラインに戻ると変更は自動で統合されます。</span></p></details>
+      <details><summary><span data-l="my">ရှိပြီးသား ပစ္စည်းစာရင်းကို ဘယ်လိုထည့်ရမလဲ?</span><span data-l="en">How do I add my existing product list?</span><span data-l="ja">今ある商品リストはどう追加しますか？</span></summary>
+        <p><span data-l="my">ဆက်တင် → ထည့်သွင်း / ထုတ်ယူ တွင် Template ကို download လုပ်ပါ။ ပစ္စည်းအမည်၊ ဈေးနှုန်း၊ လက်ကျန် စသည်တို့ကို ဖြည့်ပြီး ဖိုင်ကို ပြန်ထည့်ပါ။ Excel နှင့် CSV နှစ်မျိုးလုံး ရပါသည်။</span><span data-l="en">Go to Settings → Import &amp; export and download the template. Fill in product names, prices and stock, then import the file. Excel and CSV both work.</span><span data-l="ja">設定 → インポートとエクスポートでテンプレートをダウンロードし、商品名・価格・在庫を入力してファイルをインポートします。ExcelとCSVのどちらも使えます。</span></p></details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="year"></span> gamaniPOS</span>
+    <span>
+      <a href="privacy.html"><span data-l="my">ကိုယ်ရေးအချက်အလက် မူဝါဒ</span><span data-l="en">Privacy policy</span><span data-l="ja">プライバシーポリシー</span></a>
+      · <a data-repo-link href="#">GitHub</a>
+    </span>
+  </div>
+</footer>
+
+<script>
+  // Downloads come from the latest GitHub Release of this repository.
+  const REPO = 'mrzinlinhtet/gamanipos';
+  const latest = `https://github.com/${REPO}/releases/latest/download/`;
+  document.querySelectorAll('[data-file]').forEach(a => a.href = latest + a.dataset.file);
+  document.querySelectorAll('[data-releases]').forEach(a => a.href = `https://github.com/${REPO}/releases`);
+  document.querySelectorAll('[data-repo-link]').forEach(a => a.href = `https://github.com/${REPO}`);
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Footer height feeds .last-section so in-page links can scroll FAQ to the top.
+  const footer = document.querySelector('footer');
+  const setFooterHeight = () =>
+    document.documentElement.style.setProperty('--footer-h', footer.offsetHeight + 'px');
+  setFooterHeight();
+  addEventListener('resize', setFooterHeight);
+
+  // Language toggle, remembered per browser (falls back silently if storage is blocked).
+  function setLang(l) {
+    document.documentElement.lang = l;
+    document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.set === l));
+    try { localStorage.setItem('lang', l); } catch (e) {}
+  }
+  let saved = null;
+  try { saved = localStorage.getItem('lang'); } catch (e) {}
+  // First visit: Japanese browsers get Japanese; everyone else Myanmar.
+  const langs = ['my', 'en', 'ja'];
+  const browser = (navigator.language || '').slice(0, 2);
+  setLang(langs.includes(saved) ? saved : browser === 'ja' ? 'ja' : 'my');
+  document.querySelectorAll('.lang button').forEach(b => b.onclick = () => setLang(b.dataset.set));
+</script>
+</body>
+</html>

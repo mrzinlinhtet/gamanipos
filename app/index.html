@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/gamanipos/app/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Offline-first POS for shops and online sellers in Myanmar.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="gamaniPOS">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>gamaniPOS</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <!--
+    You can customize the "flutter_bootstrap.js" script.
+    This is useful to provide a custom configuration to the Flutter loader
+    or to give the user feedback during the initialization process.
+
+    For more details:
+    * https://docs.flutter.dev/platform-integration/web/initialization
+  -->
+  <script src="flutter_bootstrap.js" async></script>
+
+  <!-- Shown when a newer release is out while this tab is open. -->
+  <div id="update-bar"
+       style="display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;gap:12px;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:#07473F;color:#fff;font:14px/1.4 system-ui,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.25)">
+    <span>ဗားရှင်းအသစ် ရပါပြီ · New version ready · 新しいバージョン</span>
+    <button type="button" onclick="location.reload()"
+            style="border:0;border-radius:8px;padding:8px 14px;background:#D99A2B;color:#18181B;font:600 14px system-ui,sans-serif;cursor:pointer">↻ Update</button>
+  </div>
+  <script>
+    // A shop keeps this tab open all day. Now and then, and when the tab comes
+    // back into view, check for a newer release and offer it. Never reload by
+    // itself: that would clear a sale in progress.
+    (function () {
+      const bar = document.getElementById('update-bar');
+      async function check() {
+        if (!window.gamaniBuild || window.gamaniBuild === 'dev') return;
+        try {
+          const res = await fetch('flutter_bootstrap.js', { cache: 'no-store' });
+          const live = (await res.text()).match(/const gamaniBuild = '([^']+)'/);
+          if (live && live[1] !== window.gamaniBuild) bar.style.display = 'flex';
+        } catch (e) {
+          // Offline: try again later.
+        }
+      }
+      window.gamaniCheckUpdate = check;
+      setInterval(check, 10 * 60 * 1000);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) check();
+      });
+    })();
+  </script>
+</body>
+</html>
